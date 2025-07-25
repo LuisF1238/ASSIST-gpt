@@ -10,11 +10,19 @@ import {
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/providers';
 
+/**
+ * Server action to save the selected chat model as a cookie
+ * Persists user's model preference across sessions
+ */
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
   cookieStore.set('chat-model', model);
 }
 
+/**
+ * Generates a concise title for a chat based on the user's first message
+ * Uses AI to create a descriptive summary under 80 characters
+ */
 export async function generateTitleFromUserMessage({
   message,
 }: {
@@ -33,6 +41,10 @@ export async function generateTitleFromUserMessage({
   return title;
 }
 
+/**
+ * Deletes all messages in a chat that come after a specific message
+ * Used for regenerating responses or branching conversations
+ */
 export async function deleteTrailingMessages({ id }: { id: string }) {
   const [message] = await getMessageById({ id });
 
@@ -42,6 +54,10 @@ export async function deleteTrailingMessages({ id }: { id: string }) {
   });
 }
 
+/**
+ * Updates the visibility setting of a chat (private/public)
+ * Allows users to control who can access their conversations
+ */
 export async function updateChatVisibility({
   chatId,
   visibility,
