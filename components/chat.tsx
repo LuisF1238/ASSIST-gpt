@@ -23,10 +23,6 @@ import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 
-/**
- * Main chat interface component
- * Handles message exchange, file attachments, artifacts, and chat state management
- */
 export function Chat({
   id,
   initialMessages,
@@ -44,21 +40,16 @@ export function Chat({
   session: Session;
   autoResume: boolean;
 }) {
-  // Hook for managing chat visibility (private/public)
   const { visibilityType } = useChatVisibility({
     chatId: id,
     initialVisibilityType,
   });
 
-  // SWR configuration for cache management
   const { mutate } = useSWRConfig();
-  // Data stream state for handling streaming responses
   const { setDataStream } = useDataStream();
 
-  // Input state for the chat input field
   const [input, setInput] = useState<string>('');
 
-  // Main chat hook that handles message sending, receiving, and state management
   const {
     messages,
     setMessages,
@@ -70,12 +61,11 @@ export function Chat({
   } = useChat<ChatMessage>({
     id,
     messages: initialMessages,
-    experimental_throttle: 100, // Throttle updates to prevent excessive re-renders
+    experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
       api: '/api/chat',
       fetch: fetchWithErrorHandlers,
-      // Prepare request body with chat configuration
       prepareSendMessagesRequest({ messages, id, body }) {
         return {
           body: {
@@ -88,15 +78,12 @@ export function Chat({
         };
       },
     }),
-    // Handle streaming data parts
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
     },
-    // Refresh chat history when conversation ends
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
-    // Handle chat errors with toast notifications
     onError: (error) => {
       if (error instanceof ChatSDKError) {
         toast({
@@ -144,6 +131,7 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh bg-background">
         <ChatHeader
           chatId={id}
+          selectedModelId={initialChatModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={session}
